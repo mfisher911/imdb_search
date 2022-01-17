@@ -33,6 +33,29 @@ dictConfig(
 app = Flask(__name__)
 
 
+def filter_summary(tag):
+    """Return true if the tag has a data-testid attribute."""
+    return (
+        tag.name == "span"
+        and tag.has_attr("class")
+        and "GenresAndPlot__TextContainerBreakpointXL" in tag.get("class")[0]
+    )
+
+
+def get_imdb(url):
+    """Perform a search at IMDb and return the title and summary."""
+    imdb = requests.get(url)
+    soup = BeautifulSoup(imdb.content, "html5lib")
+    title = soup.title.text.replace(" - IMDb", "")
+    summary = None
+    try:
+        summary = soup.find_all(filter_summary)[0].text.strip()
+    except IndexError:
+        summary = ""
+
+    return {"title": title, "summary": summary}
+
+
 @app.route("/imdb/", methods=["GET", "POST"])
 def hello_world():
     """Handle web request and return result."""
@@ -41,7 +64,6 @@ def hello_world():
         _input = request.form.get("input")
         logging.info("got input: %s", _input)
         title = ""
-        _sum = ""
         url = ""
         parts = _input.split("\r\n")
         if len(parts) == 3:
@@ -54,16 +76,9 @@ def hello_world():
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
 
-        imdb = requests.get(url)
-        soup = BeautifulSoup(imdb.content, "html5lib")
-        title = soup.title.text.replace(" - IMDb", "")
-        summary = ""
-        try:
-            summary = soup.find_all("div", class_="summary_text")[
-                0
-            ].text.strip()
-        except IndexError:
-            summary = _sum
+        imdb = get_imdb(url)
+        if not title:
+            title = imdb["title"]
 
         # strip the year from the end for letterboxd.com
         yindex = title.rfind("(")
@@ -75,7 +90,7 @@ def hello_world():
         result = {
             "title": title,
             "url": url,
-            "summary": summary,
+            "summary": imdb["summary"],
             "letterboxd_title": lb_title,
         }
         logging.info("returning result: %s", result)
