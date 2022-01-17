@@ -1,3 +1,4 @@
+"""Retrieve a page from IMDb and return info."""
 import logging
 from logging.config import dictConfig
 
@@ -34,19 +35,21 @@ app = Flask(__name__)
 
 @app.route("/imdb/", methods=["GET", "POST"])
 def hello_world():
+    """Handle web request and return result."""
+    result = "Hello, world."
     if request.form:
-        input = request.form.get("input")
-        logging.info("got input: %s", input)
+        _input = request.form.get("input")
+        logging.info("got input: %s", _input)
         title = ""
         _sum = ""
         url = ""
-        parts = input.split("\r\n")
+        parts = _input.split("\r\n")
         if len(parts) == 3:
             title, _sum, url = parts
         elif len(parts) == 2:
             title, url = parts
         elif len(parts) == 1:
-            url = input
+            url = _input
         if len(url) == 0:
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
@@ -76,10 +79,9 @@ def hello_world():
             "letterboxd_title": lb_title,
         }
         logging.info("returning result: %s", result)
+        result = jsonify(result)
 
-        return jsonify(result)
-    else:
-        return "Hello, World!"
+    return result
 
 
 if __name__ == "__main__":
