@@ -37,8 +37,10 @@ def filter_summary(tag):
     """Return true if the tag has a data-testid attribute."""
     return (
         tag.name == "span"
-        and tag.has_attr("class")
-        and "GenresAndPlot__TextContainerBreakpointXL" in tag.get("class")[0]
+        and tag.has_attr("role")
+        and "presentation" in tag["role"]
+        and tag.has_attr("data-testid")
+        and "plot-xl" in tag["data-testid"]
     )
 
 
