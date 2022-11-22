@@ -1,6 +1,6 @@
 # imdb_search
 
-Scrape IMDb for Day One entry templates.
+Access OMDb for Day One entry template content.
 
 Expects a POSTed form with a variable "input", which can either be a
 URL (from "Copy URL") or the text from an iOS Share Sheet action.
