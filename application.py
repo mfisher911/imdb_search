@@ -1,10 +1,10 @@
 """Retrieve a page from IMDb and return info."""
 import logging
+import os
 from logging.config import dictConfig
 
 import requests
 
-from bs4 import BeautifulSoup
 from flask import Flask, request, jsonify
 
 
@@ -33,29 +33,24 @@ dictConfig(
 app = Flask(__name__)
 
 
-def filter_summary(tag):
-    """Return true if the tag has a data-testid attribute."""
-    return (
-        tag.name == "span"
-        and tag.has_attr("role")
-        and "presentation" in tag["role"]
-        and tag.has_attr("data-testid")
-        and "plot-xl" in tag["data-testid"]
+def get_omdb(url):
+    """Perform a search via OMDb and return the title and summary."""
+    imdb_id = url.split("/")[4]
+
+    omdb_url = (
+        f"http://www.omdbapi.com/?apikey={os.getenv('OMDBAPI')}"
+        f"&i={imdb_id}&plot=full"
     )
 
+    response = requests.get(omdb_url)
+    logging.debug("OMDb response: %s", response.json())
+    summary = response.json()["Plot"]
+    title = response.json()["Title"]
+    year = response.json()["Year"]
 
-def get_imdb(url):
-    """Perform a search at IMDb and return the title and summary."""
-    imdb = requests.get(url)
-    soup = BeautifulSoup(imdb.content, "html5lib")
-    title = soup.title.text.replace(" - IMDb", "")
-    summary = None
-    try:
-        summary = soup.find_all(filter_summary)[0].text.strip()
-    except IndexError:
-        summary = ""
-
-    return {"title": title, "summary": summary}
+    result = {"title": title, "summary": summary, "year": year}
+    logging.debug("get_omdb(%s) => %s", url, result)
+    return result
 
 
 @app.route("/imdb/", methods=["GET", "POST"])
@@ -78,22 +73,15 @@ def hello_world():
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
 
-        imdb = get_imdb(url)
+        mdb = get_omdb(url)
         if not title:
-            title = imdb["title"]
-
-        # strip the year from the end for letterboxd.com
-        yindex = title.rfind("(")
-        if yindex != -1:
-            lb_title = title[0 : yindex - 1]
-        else:
-            lb_title = title
+            title = f"{mdb['title']} {mdb['year']}"
 
         result = {
             "title": title,
             "url": url,
-            "summary": imdb["summary"],
-            "letterboxd_title": lb_title,
+            "summary": mdb["summary"],
+            "letterboxd_title": mdb["title"],
         }
         logging.info("returning result: %s", result)
         result = jsonify(result)
