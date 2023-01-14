@@ -74,14 +74,13 @@ def hello_world():
         url = url.replace("\\/", "/")
 
         mdb = get_omdb(url)
-        if not title:
-            title = f"{mdb['title']} {mdb['year']}"
 
         result = {
-            "title": title,
+            "title": mdb["title"],
             "url": url,
             "summary": mdb["summary"],
             "letterboxd_title": mdb["title"],
+            "year": mdb["year"],
         }
         logging.info("returning result: %s", result)
         result = jsonify(result)
