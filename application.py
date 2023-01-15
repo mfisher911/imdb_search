@@ -100,7 +100,6 @@ def hello_world():
     if request.form:
         _input = request.form.get("input")
         logging.info("got input: %s", _input)
-        title = ""
         url = ""
         parts = _input.split("\r\n")
         url = parts[-1]
