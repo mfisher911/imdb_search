@@ -44,7 +44,11 @@ def get_omdb(url):
 
     response = requests.get(omdb_url)
     logging.debug("OMDb response: %s", response.json())
-    summary = response.json()["Plot"]
+    try:
+        summary = response.json()["Plot"]
+    except KeyError as e:
+        logging.critical("No Plot in entry: %s", response.json())
+        summary = ""
     title = response.json()["Title"]
     year = response.json()["Year"]
 
