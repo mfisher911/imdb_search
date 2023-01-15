@@ -6,6 +6,7 @@ from logging.config import dictConfig
 import requests
 
 from flask import Flask, request, jsonify
+from tmdbapis import TMDbAPIs
 
 
 dictConfig(
@@ -57,6 +58,24 @@ def get_omdb(url):
     return result
 
 
+def get_tmdb(url):
+    """Perform a search via OMDb and return the title and summary."""
+    imdb_id = url.split("/")[4]
+
+    tmdb_url = (
+        f"https://api.themoviedb.org/3/find/{imdb_id}?"
+        f"api_key={os.getenv('TMPDBAPI')}&language=en-US"
+        f"&external_source=imdb_id"
+    )
+
+    tmdb = TMDbAPIs(os.getenv("TMDBAPI"))
+    results = tmdb.find_by_id(imdb_id=imdb_id)
+    return {
+        "title": results.movie_results[0].title,
+        "original_title": results.movie_results[0].original_title,
+    }
+
+
 @app.route("/imdb/", methods=["GET", "POST"])
 def hello_world():
     """Handle web request and return result."""
@@ -77,15 +96,19 @@ def hello_world():
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
 
-        mdb = get_omdb(url)
+        omdb = get_omdb(url)
+        tmdb = get_tmdb(url)
 
         result = {
-            "title": mdb["title"],
+            "title": tmdb["title"],
+            "original_title": tmdb["original_title"],
             "url": url,
-            "summary": mdb["summary"],
-            "letterboxd_title": mdb["title"],
-            "year": mdb["year"],
+            "summary": omdb["summary"],
+            "letterboxd_title": tmdb["title"],
+            "year": omdb["year"],
         }
+        if tmdb["title"] != tmdb["original_title"]:
+            result["foreign_title"] = True
         logging.info("returning result: %s", result)
         result = jsonify(result)
 
