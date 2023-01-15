@@ -103,12 +103,7 @@ def hello_world():
         title = ""
         url = ""
         parts = _input.split("\r\n")
-        if len(parts) == 3:
-            title, _sum, url = parts
-        elif len(parts) == 2:
-            title, url = parts
-        elif len(parts) == 1:
-            url = _input
+        url = parts[-1]
         if len(url) == 0:
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
