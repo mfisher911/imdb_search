@@ -75,6 +75,23 @@ def get_tmdb(url):
         "original_title": results.movie_results[0].original_title,
     }
 
+def process(url):
+    """Perform lookups and generate output dict."""
+    omdb = get_omdb(url)
+    tmdb = get_tmdb(url)
+
+    result = {
+        "title": tmdb["title"],
+        "original_title": tmdb["original_title"],
+        "url": url,
+        "summary": omdb["summary"],
+        "year": omdb["year"],
+    }
+    if tmdb["title"] != tmdb["original_title"]:
+        result["foreign_title"] = True
+    logging.info("returning result: %s", result)
+    return result
+
 
 @app.route("/imdb/", methods=["GET", "POST"])
 def hello_world():
@@ -95,22 +112,7 @@ def hello_world():
         if len(url) == 0:
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
-
-        omdb = get_omdb(url)
-        tmdb = get_tmdb(url)
-
-        result = {
-            "title": tmdb["title"],
-            "original_title": tmdb["original_title"],
-            "url": url,
-            "summary": omdb["summary"],
-            "letterboxd_title": tmdb["title"],
-            "year": omdb["year"],
-        }
-        if tmdb["title"] != tmdb["original_title"]:
-            result["foreign_title"] = True
-        logging.info("returning result: %s", result)
-        result = jsonify(result)
+        result = jsonify(process(url))
 
     return result
 
