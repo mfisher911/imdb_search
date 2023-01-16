@@ -75,6 +75,7 @@ def get_tmdb(url):
         "original_title": _json["movie_results"][0]["original_title"],
     }
 
+
 def process(url):
     """Perform lookups and generate output dict."""
     omdb = get_omdb(url)
@@ -89,6 +90,7 @@ def process(url):
     }
     if tmdb["title"] != tmdb["original_title"]:
         result["foreign_title"] = True
+
     logging.info("returning result: %s", result)
     return result
 
