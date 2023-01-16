@@ -64,7 +64,7 @@ def get_tmdb(url):
 
     tmdb_url = (
         f"https://api.themoviedb.org/3/find/{imdb_id}?"
-        f"api_key={os.getenv('TMPDBAPI')}&language=en-US"
+        f"api_key={os.getenv('TMDBAPI')}&language=en-US"
         f"&external_source=imdb_id"
     )
 
