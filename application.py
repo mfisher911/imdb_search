@@ -6,7 +6,6 @@ from logging.config import dictConfig
 import requests
 
 from flask import Flask, request, jsonify
-from tmdbapis import TMDbAPIs
 
 
 dictConfig(
@@ -68,11 +67,12 @@ def get_tmdb(url):
         f"&external_source=imdb_id"
     )
 
-    tmdb = TMDbAPIs(os.getenv("TMDBAPI"))
-    results = tmdb.find_by_id(imdb_id=imdb_id)
+    response = requests.get(tmdb_url)
+    _json = response.json()
+    logging.debug("TMDb response: %s", _json)
     return {
-        "title": results.movie_results[0].title,
-        "original_title": results.movie_results[0].original_title,
+        "title": _json["movie_results"][0]["title"],
+        "original_title": _json["movie_results"][0]["original_title"],
     }
 
 def process(url):
