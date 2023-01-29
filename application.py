@@ -31,6 +31,7 @@ dictConfig(
 )
 
 app = Flask(__name__)
+app.config.from_prefixed_env()
 
 
 def get_omdb(url):
