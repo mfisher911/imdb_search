@@ -103,6 +103,7 @@ celerybeat.pid
 
 # Environments
 .env
+.direnv
 .venv
 env/
 venv/
@@ -128,4 +129,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+.envrc
 supervisord.conf

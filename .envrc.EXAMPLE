@@ -1,0 +1,6 @@
+# -*- mode:sh; -*-
+layout python3
+export OMDBAPI="deadbeef"
+export TMDBAPI="deadbeefcafedeadbeefcafe"
+# make sure this matches what's in supervisord.conf
+export FLASK_SECRET_KEY="deadbeefcafedeadbeefcafe"
