@@ -4,3 +4,8 @@ export OMDBAPI="deadbeef"
 export TMDBAPI="deadbeefcafedeadbeefcafe"
 # make sure this matches what's in supervisord.conf
 export FLASK_SECRET_KEY="deadbeefcafedeadbeefcafe"
+# Google Sheets stuff
+# SPREADSHEET_ID comes from the URL
+# RANGE_NAME is the sheet location to put stuff
+export SPREADSHEET_ID="TESTINFO"
+export RANGE_NAME="Untitled!A2:B"

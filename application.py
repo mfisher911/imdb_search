@@ -1,4 +1,5 @@
-"""Retrieve a page from IMDb and return info."""
+"""Retrieve a page from IMDb, return info, and log to Google Sheets."""
+from datetime import date
 import logging
 import os
 from logging.config import dictConfig
@@ -6,6 +7,18 @@ from logging.config import dictConfig
 import requests
 
 from flask import Flask, request, jsonify
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from oauth2client.service_account import ServiceAccountCredentials
+
+# config constants
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+VALUE_INPUT_OPTION = "USER_ENTERED"
+INSERT_DATA_OPTION = "INSERT_ROWS"
+
+# The ID and range of the target spreadsheet.
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+RANGE_NAME = os.getenv("RANGE_NAME")
 
 
 dictConfig(
@@ -77,6 +90,39 @@ def get_tmdb(url):
     }
 
 
+def log_to_sheets(title):
+    """Append TITLE into SPREADSHEET_ID as a new row below RANGE_NAME."""
+    # Get the credentials.json by creating a new service account via
+    #   https://console.cloud.google.com/iam-admin/serviceaccounts
+    # and then give the new service account's email address write
+    # permissions on the target spreadsheet
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(
+        "credentials.json", SCOPES
+    )
+    try:
+        service = build(
+            "sheets", "v4", credentials=credentials, cache_discovery=False
+        )
+
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+
+        body = {"values": [[title, str(date.today())]]}
+
+        request = sheet.values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range=RANGE_NAME,
+            valueInputOption=VALUE_INPUT_OPTION,
+            insertDataOption=INSERT_DATA_OPTION,
+            body=body,
+        )
+        response = request.execute()
+        logging.debug("%s", response)
+
+    except HttpError as err:
+        logging.critical("HttpError: %s", err)
+
+
 def process(url):
     """Perform lookups and generate output dict."""
     omdb = get_omdb(url)
@@ -109,7 +155,9 @@ def hello_world():
         if len(url) == 0:
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
-        result = jsonify(process(url))
+        result = process(url)
+        log_to_sheets(result["title"])
+        result = jsonify(result)
 
     return result
 
