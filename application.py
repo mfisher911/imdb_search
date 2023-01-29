@@ -45,6 +45,7 @@ dictConfig(
 
 app = Flask(__name__)
 app.config.from_prefixed_env()
+logger = logging.getLogger(__name__)
 
 
 def get_omdb(url):
@@ -57,17 +58,17 @@ def get_omdb(url):
     )
 
     response = requests.get(omdb_url)
-    logging.debug("OMDb response: %s", response.json())
+    logger.debug("OMDb response: %s", response.json())
     try:
         summary = response.json()["Plot"]
     except KeyError as err:
-        logging.critical("No Plot in entry: %s (%s)", response.json(), err)
+        logger.critical("No Plot in entry: %s (%s)", response.json(), err)
         summary = ""
     title = response.json()["Title"]
     year = response.json()["Year"]
 
     result = {"title": title, "summary": summary, "year": year}
-    logging.debug("get_omdb(%s) => %s", url, result)
+    logger.debug("get_omdb(%s) => %s", url, result)
     return result
 
 
@@ -83,7 +84,7 @@ def get_tmdb(url):
 
     response = requests.get(tmdb_url)
     _json = response.json()
-    logging.debug("TMDb response: %s", _json)
+    logger.debug("TMDb response: %s", _json)
     return {
         "title": _json["movie_results"][0]["title"],
         "original_title": _json["movie_results"][0]["original_title"],
@@ -117,10 +118,10 @@ def log_to_sheets(title):
             body=body,
         )
         response = request.execute()
-        logging.debug("%s", response)
+        logger.debug("%s", response)
 
     except HttpError as err:
-        logging.critical("HttpError: %s", err)
+        logger.critical("HttpError: %s", err)
 
 
 def process(url):
@@ -138,7 +139,7 @@ def process(url):
     if tmdb["title"] != tmdb["original_title"]:
         result["foreign_title"] = True
 
-    logging.info("returning result: %s", result)
+    logger.info("returning result: %s", result)
     return result
 
 
@@ -148,7 +149,7 @@ def hello_world():
     result = "Hello, world."
     if request.form:
         _input = request.form.get("input")
-        logging.info("got input: %s", _input)
+        logger.info("got input: %s", _input)
         url = ""
         parts = _input.split("\r\n")
         url = parts[-1]
