@@ -1,0 +1,10 @@
+[program:uwsgi]
+autostart=true
+user=www
+directory=%(here)s
+command=%(here)s/.direnv/python-3.9.16/bin/uwsgi --ini uwsgi.ini
+autorestart=true
+stopsignal=INT
+# get the FLASK_SECRET_KEY by doing:
+# python -c 'import secrets; print(secrets.token_hex())'
+environment=OMDBAPI="deadbeef",TMDBAPI="deadbeefcafedeadbeefcafe",FLASK_SECRET_KEY="deadbeefcafedeadbeefcafe"
