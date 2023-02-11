@@ -1,7 +1,7 @@
 """Retrieve a page from IMDb, return info, and log to Google Sheets."""
-from datetime import date
 # lots of sample auth code from https://pypi.org/project/Flask-Login/
 
+import json
 import logging
 import os
 import textwrap
@@ -10,8 +10,7 @@ from logging.config import dictConfig
 
 import flask_login
 import requests
-
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
