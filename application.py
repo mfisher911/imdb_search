@@ -2,8 +2,11 @@
 from datetime import date
 import logging
 import os
+import textwrap
+from datetime import date
 from logging.config import dictConfig
 
+import flask_login
 import requests
 
 from flask import Flask, request, jsonify
@@ -43,9 +46,19 @@ dictConfig(
     }
 )
 
+login_manager = flask_login.LoginManager()
 app = Flask(__name__)
 app.config.from_prefixed_env()
 logger = logging.getLogger(__name__)
+login_manager.init_app(app)
+
+with open("users.json") as _json:
+    users = json.load(_json)
+
+
+class User(flask_login.UserMixin):
+    """User class for Flask."""
+    pass
 
 
 def get_omdb(url):
@@ -143,7 +156,53 @@ def process(url):
     return result
 
 
+@login_manager.user_loader
+def user_loader(email):
+    """Return a user object based on email address search."""
+    if email not in users:
+        return
+
+    user = User()
+    user.id = email
+    return user
+
+
+@login_manager.request_loader
+def request_loader(request):
+    """Get remote user object if possible."""
+    email = request.form.get("email")
+    return user_loader(email)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Return a simple login form if needed."""
+    if flask.request.method == "GET":
+        form = """
+        <form action='login' method='POST'>
+        <input type='text' name='email' id='email' placeholder='email'/>
+        <input type='password' name='password' id='password'
+            placeholder='password'/>
+        <input type='submit' name='submit'/>
+        </form>
+        """
+        return textwrap.dedent(form)
+
+    email = flask.request.form["email"]
+    if (
+        email in users
+        and flask.request.form["password"] == users[email]["password"]
+    ):
+        user = User()
+        user.id = email
+        flask_login.login_user(user)
+        return flask.redirect(flask.url_for("protected"))
+
+    return "Bad login (%s)" % email
+
+
 @app.route("/imdb/", methods=["GET", "POST"])
+@flask_login.login_required
 def hello_world():
     """Handle web request and return result."""
     result = "Hello, world."
@@ -161,6 +220,11 @@ def hello_world():
         result = jsonify(result)
 
     return result
+
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return "Unauthorized", 401
 
 
 if __name__ == "__main__":
