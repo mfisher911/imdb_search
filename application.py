@@ -1,5 +1,7 @@
 """Retrieve a page from IMDb, return info, and log to Google Sheets."""
 from datetime import date
+# lots of sample auth code from https://pypi.org/project/Flask-Login/
+
 import logging
 import os
 import textwrap
