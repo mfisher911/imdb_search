@@ -1,11 +1,11 @@
-"""Retrieve a page from IMDb, return info, and log to Google Sheets."""
+"""Retrieve a page from IMDb, return info, log to Trakt/Google Sheets."""
 # lots of sample auth code from https://pypi.org/project/Flask-Login/
 
 import json
 import logging
 import os
 import textwrap
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from logging.config import dictConfig
 
 import flask_login
@@ -14,6 +14,7 @@ from flask import Flask, jsonify, request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
+from trakt import Trakt
 
 # config constants
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -61,6 +62,68 @@ class User(flask_login.UserMixin):
     """User class for Flask."""
 
     pass
+
+
+def trakt_authenticate():
+    """CLI function for getting Trakt access token."""
+    try:
+        with open("trakt_auth.json") as _json:
+            auth = json.load(_json)
+    except FileNotFoundError as err:
+        logger.critical("trakt_auth.json not found: %s", err)
+        raise err
+
+    exp = timedelta(seconds=auth["expires_in"]) + datetime.fromtimestamp(
+        auth["created_at"], tz=timezone.utc
+    )
+    now = datetime.now(tz=timezone.utc)
+
+    # check valid date:
+    if exp > now:
+        logger.debug("exp (%s) > now (%s); using cache", exp, now)
+        return auth
+
+    print(
+        "Navigate to: %s"
+        % Trakt["oauth"].authorize_url("urn:ietf:wg:oauth:2.0:oob")
+    )
+
+    code = input("Authorization code:")
+    if not code:
+        exit(1)
+
+    authorization = Trakt["oauth"].token(code, "urn:ietf:wg:oauth:2.0:oob")
+    if not authorization:
+        exit(1)
+
+    logger.info("New auth: %r" % authorization)
+    os.umask(0o002)
+    with open("trakt_auth.json", "w") as _json:
+        json.dump(authorization, _json, indent=4, sort_keys=True)
+    return authorization
+
+
+def trakt_log(url):
+    """Create a Trakt history entry based on the IMDb ID passed."""
+    imdb_id = url.split("/")[4]
+
+    Trakt.configuration.defaults.client(
+        id=os.getenv("TRAKT_CLIENT_ID"),
+        secret=os.getenv("TRAKT_CLIENT_SECRET"),
+    )
+
+    Trakt.configuration.defaults.oauth.from_response(trakt_authenticate())
+
+    Trakt["sync/history"].add(
+        {
+            "movies": [
+                {
+                    "watched_at": str(datetime.utcnow()),
+                    "ids": {"imdb": imdb_id},
+                }
+            ]
+        }
+    )
 
 
 def get_omdb(url):
@@ -219,6 +282,7 @@ def hello_world():
         url = url.replace("\\/", "/")
         result = process(url)
         log_to_sheets(result["title"])
+        trakt_log(url)
         result = jsonify(result)
 
     return result
