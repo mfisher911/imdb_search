@@ -59,6 +59,7 @@ with open("users.json") as _json:
 
 class User(flask_login.UserMixin):
     """User class for Flask."""
+
     pass
 
 
