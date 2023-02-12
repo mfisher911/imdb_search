@@ -132,4 +132,5 @@ dmypy.json
 .envrc
 supervisord.conf
 credentials.json
+users.json
 trakt_auth.json
