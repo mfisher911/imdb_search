@@ -11,6 +11,7 @@ from logging.config import dictConfig
 import flask_login
 import requests
 from flask import Flask, jsonify, request
+from flask.logging import default_handler
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
@@ -136,17 +137,17 @@ def get_omdb(url):
     )
 
     response = requests.get(omdb_url)
-    logger.debug("OMDb response: %s", response.json())
+    app.logger.debug("OMDb response: %s", response.json())
     try:
         summary = response.json()["Plot"]
     except KeyError as err:
-        logger.critical("No Plot in entry: %s (%s)", response.json(), err)
+        app.logger.critical("No Plot in entry: %s (%s)", response.json(), err)
         summary = ""
     title = response.json()["Title"]
     year = response.json()["Year"]
 
     result = {"title": title, "summary": summary, "year": year}
-    logger.debug("get_omdb(%s) => %s", url, result)
+    app.logger.debug("get_omdb(%s) => %s", url, result)
     return result
 
 
@@ -162,7 +163,7 @@ def get_tmdb(url):
 
     response = requests.get(tmdb_url)
     _json = response.json()
-    logger.debug("TMDb response: %s", _json)
+    app.logger.debug("TMDb response: %s", _json)
     return {
         "title": _json["movie_results"][0]["title"],
         "original_title": _json["movie_results"][0]["original_title"],
@@ -196,10 +197,10 @@ def log_to_sheets(title):
             body=body,
         )
         response = request.execute()
-        logger.debug("%s", response)
+        app.logger.debug("%s", response)
 
     except HttpError as err:
-        logger.critical("HttpError: %s", err)
+        app.logger.critical("HttpError: %s", err)
 
 
 def process(url):
@@ -217,15 +218,16 @@ def process(url):
     if tmdb["title"] != tmdb["original_title"]:
         result["foreign_title"] = True
 
-    logger.info("returning result: %s", result)
+    app.logger.info("returning result: %s", result)
     return result
 
 
 @login_manager.user_loader
 def user_loader(email):
     """Return a user object based on email address search."""
+    app.logger.debug("user_loader(email=%s)", email)
     if email not in users:
-        return
+        return None
 
     user = User()
     user.id = email
