@@ -272,8 +272,8 @@ def login():
         user = User()
         user.id = email
         flask_login.login_user(user)
-        return flask.redirect(flask.url_for("protected"))
         app.logger.info("logged in user: %s", user)
+        return app.redirect(app.url_for("imdb"))
 
     app.logger.critical(
         "bad user: %s (%s)", email, request.form["password"][0:5]
@@ -283,7 +283,7 @@ def login():
 
 @app.route("/imdb/", methods=["GET", "POST"])
 @flask_login.login_required
-def hello_world():
+def imdb(imdb_id=None):
     """Handle web request and return result."""
     result = "Hello, world."
     if request.form:
