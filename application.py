@@ -282,6 +282,7 @@ def login():
 
 
 @app.route("/imdb/", methods=["GET", "POST"])
+@app.route("/imdb/<imdb_id>", methods=["GET"])
 @flask_login.login_required
 def imdb(imdb_id=None):
     """Handle web request and return result."""
@@ -297,6 +298,12 @@ def imdb(imdb_id=None):
         url = url.replace("\\/", "/")
         result = process(url)
         log_to_sheets(result["title"])
+        trakt_log(url)
+        result = jsonify(result)
+    elif imdb_id:
+        app.logger.info("got IMDb id: %s", imdb_id)
+        url = f"https://www.imdb.com/title/{imdb_id}"
+        result = process(url)
         trakt_log(url)
         result = jsonify(result)
 
