@@ -253,7 +253,7 @@ def request_loader(request):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Return a simple login form if needed."""
-    if flask.request.method == "GET":
+    if request.method == "GET":
         form = """
         <form action='login' method='POST'>
         <input type='text' name='email' id='email' placeholder='email'/>
@@ -264,10 +264,10 @@ def login():
         """
         return textwrap.dedent(form)
 
-    email = flask.request.form["email"]
+    email = request.form["email"]
     if (
         email in users
-        and flask.request.form["password"] == users[email]["password"]
+        and request.form["password"] == users[email]["password"]
     ):
         user = User()
         user.id = email
