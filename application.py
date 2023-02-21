@@ -120,7 +120,8 @@ def trakt_log(url):
         secret=os.getenv("TRAKT_CLIENT_SECRET"),
     )
 
-    Trakt.configuration.defaults.oauth.from_response(trakt_authenticate())
+    auth = trakt_authenticate()
+    Trakt.configuration.defaults.oauth.from_response(auth)
     app.logger.debug("using auth=%s", auth)
 
     Trakt["sync/history"].add(
