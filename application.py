@@ -281,6 +281,12 @@ def login():
     return "Bad login (%s)" % email
 
 
+@app.route("/logout")
+def logout():
+    flask_login.logout_user()
+    return app.redirect(app.url_for("imdb"))
+
+
 @app.route("/imdb/", methods=["GET", "POST"])
 @app.route("/imdb/<imdb_id>", methods=["GET"])
 @flask_login.login_required
