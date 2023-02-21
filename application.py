@@ -67,6 +67,12 @@ class User(flask_login.UserMixin):
 
 def trakt_authenticate():
     """CLI function for getting Trakt access token."""
+    app.logger.debug(
+        "trakt_authenticate(); TRAKT_CLIENT_ID=%s, TRAKT_CLIENT_SECRET=%s",
+        os.getenv("TRAKT_CLIENT_ID")[0:5],
+        os.getenv("TRAKT_CLIENT_SECRET")[0:5],
+    )
+
     try:
         with open("trakt_auth.json") as _json:
             auth = json.load(_json)
@@ -101,6 +107,7 @@ def trakt_authenticate():
     os.umask(0o002)
     with open("trakt_auth.json", "w") as _json:
         json.dump(authorization, _json, indent=4, sort_keys=True)
+    logger.debug("returning new auth: %s", authorization)
     return authorization
 
 
@@ -114,6 +121,7 @@ def trakt_log(url):
     )
 
     Trakt.configuration.defaults.oauth.from_response(trakt_authenticate())
+    app.logger.debug("using auth=%s", auth)
 
     Trakt["sync/history"].add(
         {
@@ -264,7 +272,11 @@ def login():
         user.id = email
         flask_login.login_user(user)
         return flask.redirect(flask.url_for("protected"))
+        app.logger.info("logged in user: %s", user)
 
+    app.logger.critical(
+        "bad user: %s (%s)", email, request.form["password"][0:5]
+    )
     return "Bad login (%s)" % email
 
 
@@ -275,7 +287,7 @@ def hello_world():
     result = "Hello, world."
     if request.form:
         _input = request.form.get("input")
-        logger.info("got input: %s", _input)
+        app.logger.info("got input: %s", _input)
         url = ""
         parts = _input.split("\r\n")
         url = parts[-1]
