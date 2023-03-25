@@ -53,6 +53,9 @@ login_manager = flask_login.LoginManager()
 app = Flask(__name__)
 app.config.from_prefixed_env()
 logger = logging.getLogger(__name__)
+logging.getLogger("trakt.interfaces.sync.core.mixins").addHandler(
+    default_handler
+)
 login_manager.init_app(app)
 
 with open("users.json") as _json:
