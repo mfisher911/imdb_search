@@ -179,6 +179,7 @@ def get_tmdb(url):
     return {
         "title": _json["movie_results"][0]["title"],
         "original_title": _json["movie_results"][0]["original_title"],
+        "summary": _json["movie_results"][0]["overview"],
     }
 
 
@@ -224,9 +225,14 @@ def process(url):
         "title": tmdb["title"],
         "original_title": tmdb["original_title"],
         "url": url,
-        "summary": omdb["summary"],
         "year": omdb["year"],
     }
+
+    if  "..." not in omdb["summary"]:
+        result["summary"] = omdb["summary"]
+    else:
+        result["summary"] = tmdb["summary"]
+
     if tmdb["title"] != tmdb["original_title"]:
         result["foreign_title"] = True
 
