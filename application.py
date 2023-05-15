@@ -93,6 +93,11 @@ def trakt_authenticate():
         logger.debug("exp (%s) > now (%s); using cache", exp, now)
         return auth
 
+    Trakt.configuration.defaults.client(
+        id=os.getenv("TRAKT_CLIENT_ID"),
+        secret=os.getenv("TRAKT_CLIENT_SECRET"),
+    )
+
     print(
         "Navigate to: %s"
         % Trakt["oauth"].authorize_url("urn:ietf:wg:oauth:2.0:oob")
