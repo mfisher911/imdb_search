@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import textwrap
+import re
 from datetime import date, datetime, timedelta, timezone
 from logging.config import dictConfig
 
@@ -316,6 +317,7 @@ def imdb(imdb_id=None):
         if len(url) == 0:
             return "No URL was provided", 400
         url = url.replace("\\/", "/")
+        url = re.sub(r"\?.*$", "", url)
         result = process(url)
         log_to_sheets(result["title"])
         trakt_log(url)
