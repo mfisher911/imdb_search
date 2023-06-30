@@ -234,7 +234,7 @@ def process(url):
         "year": omdb["year"],
     }
 
-    if  "..." not in omdb["summary"]:
+    if "..." not in omdb["summary"]:
         result["summary"] = omdb["summary"]
     else:
         result["summary"] = tmdb["summary"]
