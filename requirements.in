@@ -42,7 +42,6 @@ python-dateutil==2.8.2
 requests==2.31.0
 rsa==4.9
 six==1.16.0
-sqlite3==0.0.0
 stack-data==0.6.3
 traitlets==5.11.2
 trakt.py==4.4.0
