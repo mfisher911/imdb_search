@@ -8,6 +8,7 @@ import textwrap
 import re
 from datetime import date, datetime, timedelta, timezone
 from logging.config import dictConfig
+from logging.handlers import SMTPHandler
 
 import flask_login
 import requests
@@ -28,14 +29,26 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 RANGE_NAME = os.getenv("RANGE_NAME")
 
 
+mail_handler = SMTPHandler(
+    mailhost="in1-smtp.messagingengine.com",
+    fromaddr="server-error@shell.fisher.one",
+    toaddrs=["mfisher@myfastmail.com"],
+    subject="IMDb Lookup",
+)
+mail_handler.setLevel(logging.INFO)
+mail_handler.setFormatter(
+    logging.Formatter(
+        "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    )
+)
+
 dictConfig(
     {
         "version": 1,
         "formatters": {
             "default": {
                 "format": (
-                    "[%(asctime)s] %(levelname)s in "
-                    "%(module)s: %(message)s"
+                    "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
                 ),
             }
         },
@@ -46,7 +59,7 @@ dictConfig(
                 "formatter": "default",
             }
         },
-        "root": {"level": "INFO", "handlers": ["wsgi"]},
+        "root": {"level": "DEBUG", "handlers": ["wsgi"]},
     }
 )
 
@@ -58,6 +71,10 @@ logging.getLogger("trakt.interfaces.sync.core.mixins").addHandler(
     default_handler
 )
 login_manager.init_app(app)
+
+if not app.debug:
+    app.logger.addHandler(mail_handler)
+
 
 with open("users.json") as _json:
     users = json.load(_json)
@@ -112,11 +129,11 @@ def trakt_authenticate():
     if not authorization:
         exit(1)
 
-    logger.info("New auth: %r" % authorization)
+    app.logger.info("New auth: %r" % authorization)
     os.umask(0o002)
     with open("trakt_auth.json", "w") as _json:
         json.dump(authorization, _json, indent=4, sort_keys=True)
-    logger.debug("returning new auth: %s", authorization)
+    app.logger.debug("returning new auth: %s", authorization)
     return authorization
 
 
