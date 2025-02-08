@@ -107,8 +107,9 @@ def trakt_authenticate():
     now = datetime.now(tz=timezone.utc)
 
     # check valid date:
-    if exp > now:
-        logger.debug("exp (%s) > now (%s); using cache", exp, now)
+    pad_date = now + timedelta(hours=(24 * 2))
+    if exp > pad_date:
+        logger.debug("exp (%s) > pad_date (%s); using cache", exp, pad_date)
         return auth
 
     Trakt.configuration.defaults.client(
