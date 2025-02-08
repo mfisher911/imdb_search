@@ -23,6 +23,7 @@ from trakt import Trakt
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 VALUE_INPUT_OPTION = "USER_ENTERED"
 INSERT_DATA_OPTION = "INSERT_ROWS"
+TEST_IMDB_ID = None
 
 # The ID and range of the target spreadsheet.
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
@@ -259,7 +260,6 @@ def process(url):
     if tmdb["title"] != tmdb["original_title"]:
         result["foreign_title"] = True
 
-    app.logger.info("returning result: %s", result)
     return result
 
 
@@ -319,6 +319,22 @@ def logout():
     return app.redirect(app.url_for("imdb"))
 
 
+def store(imdb_id, result, log=False):
+    """Store the result if it's a good idea."""
+    if imdb_id != TEST_IMDB_ID:
+        log_to_sheets(result["title"])
+        try:
+            trakt_log(imdb_id)
+        except Exception as _target:
+            app.logger.critical(
+                "result: %s; trakt error: %s", result, _target
+            )
+        if log:
+            app.logger.info("returning %s", result)
+    else:
+        app.logger.debug("not logging %s", imdb_id)
+
+
 @app.route("/imdb/", methods=["GET", "POST"])
 @app.route("/imdb/<imdb_id>", methods=["GET"])
 @flask_login.login_required
@@ -336,17 +352,14 @@ def imdb(imdb_id=None):
         url = url.replace("\\/", "/")
         url = re.sub(r"\?.*$", "", url)
         result = process(url)
-        log_to_sheets(result["title"])
-        trakt_log(url)
-        result = jsonify(result)
+        store(url, result, log=True)
     elif imdb_id:
         app.logger.info("got IMDb id: %s", imdb_id)
         url = f"https://www.imdb.com/title/{imdb_id}"
         result = process(url)
-        trakt_log(url)
-        result = jsonify(result)
+        store(url, result, log=True)
 
-    return result
+    return jsonify(result)
 
 
 @login_manager.unauthorized_handler
