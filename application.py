@@ -310,7 +310,7 @@ def imdb(imdb_id=None):
     result = "Hello, world."
     if request.form:
         _input = request.form.get("input")
-        app.logger.info("got input: %s", _input)
+        app.logger.debug("got input: %s", _input)
         url = ""
         parts = _input.split("\r\n")
         url = parts[-1]
