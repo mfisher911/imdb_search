@@ -168,8 +168,7 @@ def get_omdb(url):
     imdb_id = url.split("/")[4]
 
     omdb_url = (
-        f"https://www.omdbapi.com/?apikey={os.getenv('OMDBAPI')}"
-        f"&i={imdb_id}"
+        f"https://www.omdbapi.com/?apikey={os.getenv('OMDBAPI')}&i={imdb_id}"
     )
 
     response = requests.get(omdb_url)
