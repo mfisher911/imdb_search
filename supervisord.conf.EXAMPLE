@@ -2,7 +2,7 @@
 autostart=true
 user=www
 directory=%(here)s
-command=%(here)s/.direnv/python-3.9.16/bin/uwsgi --ini uwsgi.ini
+command=%(here)s/.venv/bin/uwsgi --ini uwsgi.ini
 autorestart=true
 stopsignal=INT
 # get the FLASK_SECRET_KEY by doing:

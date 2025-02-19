@@ -1,3 +1,67 @@
+[project]
+name = "imdb-search"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "arrow",
+    "asttokens",
+    "backcall",
+    "blinker",
+    "cachetools",
+    "certifi",
+    "charset-normalizer",
+    "click",
+    "click-loglevel",
+    "decorator",
+    "exceptiongroup",
+    "executing",
+    "flask",
+    "flask-login",
+    "google-api-core",
+    "google-api-python-client",
+    "google-auth",
+    "google-auth-httplib2",
+    "googleapis-common-protos",
+    "httplib2",
+    "idna",
+    "importlib-metadata",
+    "ipython",
+    "itsdangerous",
+    "jedi",
+    "jinja2",
+    "markupsafe",
+    "matplotlib-inline",
+    "oauth2client",
+    "parso",
+    "pexpect",
+    "pickleshare",
+    "prompt-toolkit",
+    "protobuf",
+    "ptyprocess",
+    "pure-eval",
+    "pyasn1",
+    "pyasn1-modules",
+    "pygments",
+    "pyparsing",
+    "python-dateutil",
+    "requests",
+    "rsa",
+    "six",
+    "stack-data",
+    "traitlets",
+    "trakt-py",
+    "types-python-dateutil",
+    "typing-extensions",
+    "uritemplate",
+    "urllib3",
+    "uwsgi",
+    "wcwidth",
+    "werkzeug",
+    "zipp",
+]
+
 [tool.black]
 line-length = 78
 

@@ -1,5 +1,5 @@
 # -*- mode:sh; -*-
-layout python3
+layout uv
 export OMDBAPI="deadbeef"
 export TMDBAPI="deadbeefcafedeadbeefcafe"
 # make sure this matches what's in supervisord.conf
