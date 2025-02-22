@@ -99,7 +99,7 @@ def trakt_authenticate():
         with open("trakt_auth.json") as _json:
             auth = json.load(_json)
     except FileNotFoundError as err:
-        logger.critical("trakt_auth.json not found: %s", err)
+        app.logger.critical("trakt_auth.json not found: %s", err)
         raise err
 
     exp = timedelta(seconds=auth["expires_in"]) + datetime.fromtimestamp(
@@ -110,7 +110,7 @@ def trakt_authenticate():
     # check valid date:
     pad_date = now + timedelta(hours=(24 * 2))
     if exp > pad_date:
-        logger.debug("exp (%s) > pad_date (%s); using cache", exp, pad_date)
+        app.logger.debug("exp (%s) > pad_date (%s); using cache", exp, pad_date)
         return auth
 
     Trakt.configuration.defaults.client(
