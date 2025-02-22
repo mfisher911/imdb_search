@@ -130,7 +130,10 @@ dmypy.json
 .pyre/
 
 .envrc
-supervisord.conf
 credentials.json
+flasktest.sh
+supervisord.conf
+trakt_auth.json*
 users.json
-trakt_auth.json
+uwsgi-test.ini
+webtest*.sh
