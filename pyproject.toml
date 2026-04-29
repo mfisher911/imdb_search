@@ -13,7 +13,7 @@ dependencies = [
     "oauth2client",
     "requests",
     "trakt-py",
-    "uwsgi",
+    "uwsgi>=2.0.31",
 ]
 
 [tool.black]
