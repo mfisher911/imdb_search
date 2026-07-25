@@ -187,7 +187,7 @@ def get_omdb(url):
     return result
 
 
-def get_tmdb(url):
+def get_tmdb(url, _breakpoint=None):
     """Perform a search via OMDb and return the title and summary."""
     imdb_id = url.split("/")[4]
 
@@ -200,11 +200,27 @@ def get_tmdb(url):
     response = requests.get(tmdb_url)
     _json = response.json()
     app.logger.debug("TMDb response: %s", _json)
-    return {
-        "title": _json["movie_results"][0]["title"],
-        "original_title": _json["movie_results"][0]["original_title"],
-        "summary": _json["movie_results"][0]["overview"],
+    if _breakpoint:
+        breakpoint()
+    result = {"title": None, "original_title": None, "summary": None}
+    kvp = {
+        "title": "title",
+        "original_title": "original_title",
+        "summary": "overview",
     }
+
+    if len(_json["movie_results"]) > 0:
+        for k, v in kvp.items():
+            try:
+                result[k] = _json["movie_results"][0][v]
+            except:
+                app.logger.exception(
+                    "missing expected TMDb response (%s, %s)",
+                    v,
+                    _json["movie_results"],
+                )
+
+    return result
 
 
 def log_to_sheets(title):
@@ -245,6 +261,8 @@ def process(url):
     omdb = get_omdb(url)
     tmdb = get_tmdb(url)
 
+    app.logger.debug("omdb: %s, tmdb: %s", omdb, tmdb)
+
     result = {
         "title": tmdb["title"],
         "original_title": tmdb["original_title"],
@@ -252,12 +270,15 @@ def process(url):
         "year": omdb["year"],
     }
 
+    if not tmdb["title"]:
+        result["title"] = omdb["title"]
+
     if "..." not in omdb["summary"]:
         result["summary"] = omdb["summary"]
-    else:
+    elif tmdb["summary"]:
         result["summary"] = tmdb["summary"]
 
-    if tmdb["title"] != tmdb["original_title"]:
+    if tmdb["title"] and (tmdb["title"] != tmdb["original_title"]):
         result["foreign_title"] = True
 
     return result
